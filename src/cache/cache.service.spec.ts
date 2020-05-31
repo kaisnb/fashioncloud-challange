@@ -1,14 +1,19 @@
 import { ConfigService } from '@nestjs/config';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigMock } from '../../test/mocks/config.mock';
+import { DateFactoryMock } from '../../test/mocks/date-factory.mock';
+import { DocumentQueryMock } from '../../test/mocks/document-query.mock';
+import { ModelMock } from '../../test/mocks/model.mock';
 import { dateFactoryProvider } from '../utils/date-factory';
 import { CacheService } from './cache.service';
+import { CacheEntryDoc } from './interfaces/cache-entry.interface';
 
 describe('CacheService', () => {
   let service: CacheService;
   let dateFactory: DateFactoryMock;
   let config: ConfigMock;
-  let model: ModelMock;
+  let model: ModelMock<CacheEntryDoc>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -23,7 +28,7 @@ describe('CacheService', () => {
     service = module.get<CacheService>(CacheService);
     dateFactory = module.get<DateFactoryMock>(dateFactoryProvider.provide);
     config = module.get<ConfigMock>(ConfigService as any);
-    model = module.get<ModelMock>(getModelToken('CacheEntry'));
+    model = module.get<ModelMock<CacheEntryDoc>>(getModelToken('CacheEntry'));
 
     // silent logging until we inject a logger service
     // which can be mocked here
@@ -42,7 +47,7 @@ describe('CacheService', () => {
     });
 
     it('should create entry on cache miss', async () => {
-      model.findOne.mockReturnValueOnce(new DocumentQueryMock(null));
+      model.findOne.mockReturnValueOnce(new DocumentQueryMock<CacheEntryDoc>(null));
 
       await service.get(key);
 
@@ -51,7 +56,9 @@ describe('CacheService', () => {
     });
 
     it('should create entry if expired', async () => {
-      model.findOne.mockReturnValueOnce(new DocumentQueryMock({ expiry: 0 }));
+      model.findOne.mockReturnValueOnce(
+        new DocumentQueryMock<CacheEntryDoc>({ expiry: 0 }),
+      );
 
       await service.get(key);
 
@@ -63,7 +70,9 @@ describe('CacheService', () => {
       const now = new Date().getTime();
       const expiry = now + parseInt(config.get('CACHE_ENTRY_TTL'), 10);
       dateFactory.now.mockReturnValue(now);
-      model.findOne.mockReturnValueOnce(new DocumentQueryMock({ expiry: Number.MAX_SAFE_INTEGER }));
+      model.findOne.mockReturnValueOnce(
+        new DocumentQueryMock<CacheEntryDoc>({ expiry: Number.MAX_SAFE_INTEGER }),
+      );
 
       await service.get(key);
 
@@ -101,7 +110,7 @@ describe('CacheService', () => {
     it('remove n oldest entries if limit exceeded', async () => {
       const now = new Date().getTime();
       dateFactory.now.mockReturnValue(now);
-      model.countDocuments.mockReturnValueOnce(new DocumentQueryMock(7));
+      model.countDocuments.mockReturnValueOnce(new DocumentQueryMock<CacheEntryDoc>(7));
       model.find.mockReturnValueOnce(new DocumentQueryMock([{ key: 'key1' }, { key: 'key2' }]));
 
       await service.vaccum();
@@ -110,7 +119,7 @@ describe('CacheService', () => {
     });
 
     it('should not cleanup if limit is not exceeded', async () => {
-      model.countDocuments.mockReturnValueOnce(new DocumentQueryMock(3));
+      model.countDocuments.mockReturnValueOnce(new DocumentQueryMock<CacheEntryDoc>(3));
 
       await service.vaccum();
 
@@ -119,40 +128,3 @@ describe('CacheService', () => {
     });
   });
 });
-
-// TODO move mocks to a shared folder
-
-class DateFactoryMock {
-  now = jest.fn(() => new Date().getTime());
-}
-
-class ConfigMock {
-  get = jest.fn((key: string) => {
-    const options = {
-      CACHE_SIZE: '4',
-      CACHE_ENTRY_TTL: '1000',
-    };
-    return options[key];
-  });
-}
-
-class ModelMock {
-  find: jest.Mock<DocumentQueryMock> = jest.fn(() => new DocumentQueryMock(null));
-  findOne: jest.Mock<DocumentQueryMock> = jest.fn(() => new DocumentQueryMock(null));
-  updateOne: jest.Mock<DocumentQueryMock> = jest.fn(() => new DocumentQueryMock(null));
-  deleteOne: jest.Mock<DocumentQueryMock> = jest.fn(() => new DocumentQueryMock(null));
-  deleteMany: jest.Mock<DocumentQueryMock> = jest.fn(() => new DocumentQueryMock(null));
-  countDocuments: jest.Mock<DocumentQueryMock> = jest.fn(() => new DocumentQueryMock(null));
-}
-
-class DocumentQueryMock extends ModelMock {
-  private data: any;
-  constructor(data?: any) {
-    super();
-    this.data = data;
-  }
-  select: jest.Mock<DocumentQueryMock> = jest.fn(() => this);
-  sort: jest.Mock<DocumentQueryMock> = jest.fn(() => this);
-  limit: jest.Mock<DocumentQueryMock> = jest.fn(() => this);
-  exec: jest.Mock<Promise<any>> = jest.fn(() => Promise.resolve(this.data));
-}

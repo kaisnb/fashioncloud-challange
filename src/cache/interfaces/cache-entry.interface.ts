@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 export interface CacheEntry {
   key: string;
   value: string;
-  ttl: number;
+  expiry: number;
 }
 
 export interface CacheEntryDoc extends CacheEntry, Document {}

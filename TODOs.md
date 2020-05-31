@@ -1,3 +1,0 @@
-- Move mongoDB connection string to .env file
-- Documentation
-- Remove the _id field or use it for the key

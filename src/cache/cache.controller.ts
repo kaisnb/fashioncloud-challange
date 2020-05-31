@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { CacheService } from './cache.service';
 import { CacheEntry } from './interfaces/cache-entry.interface';
 
@@ -6,13 +6,23 @@ import { CacheEntry } from './interfaces/cache-entry.interface';
 export class CacheController {
   constructor(private cacheService: CacheService) {}
 
-  @Post()
-  async create(cacheEntry: CacheEntry) {
-    return this.cacheService.create(cacheEntry);
+  @Get(':key')
+  async get(@Param('key') key: string) {
+    return this.cacheService.get(key);
   }
 
-  @Get()
-  async findAll() {
-    return this.cacheService.findAll();
+  @Get('keys/all')
+  async findAllKeys() {
+    return this.cacheService.findAllKeys();
+  }
+
+  @Put()
+  async set(cacheEntry: CacheEntry) {
+    return this.cacheService.set(cacheEntry);
+  }
+
+  @Post()
+  async create(cacheEntry: CacheEntry) {
+    return this.cacheService.set(cacheEntry);
   }
 }

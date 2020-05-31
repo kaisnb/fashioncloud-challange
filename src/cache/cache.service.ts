@@ -6,20 +6,69 @@ import { CacheEntry, CacheEntryDoc } from './interfaces/cache-entry.interface';
 
 @Injectable()
 export class CacheService {
+  /**
+   * The maximum number of entries the cache can hold.
+   */
   private readonly LIMIT =
     parseInt(this.configService.get('CACHE_SIZE'), 10) || 100000;
 
+  /**
+   * The maximum time in ms a cache entry lives.
+   */
+  private readonly TTL =
+    parseInt(this.configService.get('CACHE_ENTR_TTL'), 10) || 10000;
+
   constructor(
     private configService: ConfigService,
-    @InjectModel('CacheEntry') private cacheEntryModel: Model<CacheEntryDoc>,
+    @InjectModel('CacheEntry') private model: Model<CacheEntryDoc>,
   ) {}
 
-  async create(cacheEntry: CacheEntry): Promise<CacheEntryDoc> {
-    const createdCat = new this.cacheEntryModel(cacheEntry);
-    return await createdCat.save();
+  async get(key: string): Promise<CacheEntry> {
+    let entry: CacheEntry = await this.model.findOne({ key });
+    if (null === entry) {
+      console.log('Cache miss');
+      entry = await this.generateNewEntry(key);
+    } else {
+      console.log('Cache hit');
+      const now = new Date().getTime();
+      if (entry.expiry < now) {
+        entry = await this.generateNewEntry(key);
+      } else {
+        this.model.updateOne({ key }, { expiry: this.getExpiry() });
+      }
+    }
+    return entry;
   }
 
-  async findAll(): Promise<CacheEntryDoc[]> {
-    return this.cacheEntryModel.find().exec();
+  async findAllKeys(): Promise<CacheEntryDoc[]> {
+    return this.model.find(null, { key: 1 }).exec();
+  }
+
+  private generateNewEntry(key: string): Promise<CacheEntry> {
+    const expiry = this.getExpiry();
+    const value = this.generateRndString(32);
+    return this.set({ key, value, expiry });
+  }
+
+  async set(cacheEntry: CacheEntry): Promise<CacheEntry> {
+    await this.model.updateOne({ key: cacheEntry.key }, cacheEntry, {
+      upsert: true,
+    });
+    return cacheEntry;
+  }
+
+  private getExpiry(): number {
+    return new Date().getTime() + this.TTL;
+  }
+
+  private generateRndString(length: number) {
+    let result = '';
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charCount = chars.length;
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * charCount));
+    }
+    return result;
   }
 }

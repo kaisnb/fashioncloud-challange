@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 export const CacheEntrySchema = new mongoose.Schema({
   key: String,
   value: String,
-  ttl: Number,
+  expiry: Number,
 });
 
 // remove ensureInde deprecation warning https://stackoverflow.com/questions/51960171

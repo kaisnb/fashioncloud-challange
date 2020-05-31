@@ -18,7 +18,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "compodoc": "compodoc -p tsconfig.build.json",
+    "compodoc:cov": "compodoc -p tsconfig.build.json --coverageTest --coverageMinimumPerFile 100"
   },
   "dependencies": {
     "@nestjs/common": "^7.0.0",
@@ -34,6 +36,7 @@
     "rxjs": "^6.5.4"
   },
   "devDependencies": {
+    "@compodoc/compodoc": "^1.1.11",
     "@nestjs/cli": "^7.0.0",
     "@nestjs/schematics": "^7.0.0",
     "@nestjs/testing": "^7.0.0",

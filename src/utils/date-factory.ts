@@ -1,4 +1,10 @@
+/**
+ * Typedefintion for the DateFactory
+ */
 export interface DateFactory {
+  /**
+   * Returns the current UTC time in milliseconds
+   */
   now: () => number;
 }
 

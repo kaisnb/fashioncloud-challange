@@ -1,5 +1,8 @@
 import * as mongoose from 'mongoose';
 
+/**
+ * Cache Entry Schema definition for mongoose.
+ */
 export const CacheEntrySchema = new mongoose.Schema({
   key: String,
   value: String,

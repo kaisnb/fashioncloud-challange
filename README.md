@@ -37,9 +37,21 @@ $ npm run test
 $ npm run test:cov
 ```
 
+## Documentation
+
+To generate an API-Documenation compodoc is installed.
+
+```bash
+# generate documentation
+$ npm run compodoc
+
+# check documentation coverage
+$ npm run compodoc:cov
+```
+
 ## TODOs
 
-- Documentation
+- Check if the expiry or a LRU cache can be implemented with database features
 - Remove the \_id field or use it for the key
 - In case of an expired cache hit or cache miss, the response contains \$setOnInsert property
 - Does the Cache#get method need to be atomic to prevent overriding cache entries?

@@ -1,6 +1,6 @@
 ## Description
 
-Since i never used ExpressJs directly i used a framework i am more familiar with called nestjs. Its built on top of ExpressJs but also supports compatibility with other libraries such as Fastify. Since i also never worked with MongoDB i dicided to use the object modeling tool mongosse which is also supported by NestJs.
+Since i never used ExpressJs directly i used a framework i am more familiar with called nestjs. Its built on top of ExpressJs but is also compatible with other libraries such as Fastify. Since i also never worked with MongoDB i decided to use the object modeling tool mongosse which is also supported by NestJs.
 
 ## Installation
 

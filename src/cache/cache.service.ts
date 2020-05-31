@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CacheEntry, CacheEntryDoc } from './interfaces/cache-entry.interface';
+import { CacheEntry, CacheEntryDoc, CacheEntryKey } from './interfaces/cache-entry.interface';
 
 @Injectable()
 export class CacheService {
@@ -40,14 +40,12 @@ export class CacheService {
     return entry;
   }
 
-  async findAllKeys(): Promise<CacheEntryDoc[]> {
-    return this.model.find(null, { key: 1 }).exec();
-  }
-
-  private generateNewEntry(key: string): Promise<CacheEntry> {
-    const expiry = this.getExpiry();
-    const value = this.generateRndString(32);
-    return this.set({ key, value, expiry });
+  async findAll(properties: string[]): Promise<CacheEntryKey[]> {
+    const projection = properties.reduce(
+      (prev, cur) => ((prev[cur] = 1), prev),
+      {},
+    );
+    return this.model.find(null, projection).exec();
   }
 
   async set(cacheEntry: CacheEntry): Promise<CacheEntry> {
@@ -55,6 +53,16 @@ export class CacheService {
       upsert: true,
     });
     return cacheEntry;
+  }
+
+  async remove(key: string) {
+    return null;
+  }
+
+  private generateNewEntry(key: string): Promise<CacheEntry> {
+    const expiry = this.getExpiry();
+    const value = this.generateRndString(32);
+    return this.set({ key, value, expiry });
   }
 
   private getExpiry(): number {

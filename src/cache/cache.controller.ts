@@ -6,6 +6,8 @@ import {
   ParseArrayPipe,
   Put,
   Query,
+  Body,
+  Delete,
 } from '@nestjs/common';
 import { CacheService } from './cache.service';
 import { CacheEntry, CacheEntryKey } from './interfaces/cache-entry.interface';
@@ -26,9 +28,15 @@ export class CacheController {
     return this.cacheService.findAll(properties);
   }
 
-  @Put()
+  @Put(':key')
   @HttpCode(204)
-  async set(cacheEntry: CacheEntry): Promise<void> {
-    await this.cacheService.set(cacheEntry);
+  async set(@Param('key') key: string, @Body() value: string): Promise<void> {
+    await this.cacheService.set(key, value);
+  }
+
+  @Delete(':key')
+  @HttpCode(204)
+  async remove(key: string): Promise<void> {
+    await this.cacheService.remove(key);
   }
 }

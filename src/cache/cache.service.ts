@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CacheEntry, CacheEntryDoc, CacheEntryKey } from './interfaces/cache-entry.interface';
+import {
+  CacheEntry,
+  CacheEntryDoc,
+  CacheEntryKey,
+} from './interfaces/cache-entry.interface';
 
 @Injectable()
 export class CacheService {
@@ -27,12 +31,12 @@ export class CacheService {
     let entry: CacheEntry = await this.model.findOne({ key });
     if (null === entry) {
       console.log('Cache miss');
-      entry = await this.generateNewEntry(key);
+      entry = await this.set(key, this.generateRndString(32));
     } else {
       console.log('Cache hit');
       const now = new Date().getTime();
       if (entry.expiry < now) {
-        entry = await this.generateNewEntry(key);
+        entry = await this.set(key, this.generateRndString(32));
       } else {
         this.model.updateOne({ key }, { expiry: this.getExpiry() });
       }
@@ -48,21 +52,14 @@ export class CacheService {
     return this.model.find(null, projection).exec();
   }
 
-  async set(cacheEntry: CacheEntry): Promise<CacheEntry> {
-    await this.model.updateOne({ key: cacheEntry.key }, cacheEntry, {
-      upsert: true,
-    });
+  async set(key: string, value: string): Promise<CacheEntry> {
+    const cacheEntry = { key, value, expiry: this.getExpiry() };
+    await this.model.updateOne({ key }, cacheEntry, { upsert: true });
     return cacheEntry;
   }
 
   async remove(key: string) {
-    return null;
-  }
-
-  private generateNewEntry(key: string): Promise<CacheEntry> {
-    const expiry = this.getExpiry();
-    const value = this.generateRndString(32);
-    return this.set({ key, value, expiry });
+    return this.model.deleteOne({ key });
   }
 
   private getExpiry(): number {

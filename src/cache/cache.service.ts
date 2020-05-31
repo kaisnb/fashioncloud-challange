@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { generateRndString } from 'src/utils/utils';
+import { DateFactory, dateFactoryProvider } from '../utils/date-factory';
+import { generateRndString } from '../utils/utils';
 import { CacheEntry, CacheEntryDoc, CacheEntryKey } from './interfaces/cache-entry.interface';
 
 /**
@@ -29,22 +30,26 @@ export class CacheService {
   /**
    * The maximum time in ms a cache entry lives.
    */
-  private readonly TTL = parseInt(this.configService.get('CACHE_ENTR_TTL'), 10) || 10000;
+  private readonly TTL = parseInt(this.configService.get('CACHE_ENTRY_TTL'), 10) || 10000;
 
-  constructor(private configService: ConfigService, @InjectModel('CacheEntry') private model: Model<CacheEntryDoc>) {}
+  constructor(
+    private configService: ConfigService,
+    @Inject(dateFactoryProvider.provide) private dateFactory: DateFactory,
+    @InjectModel('CacheEntry') private model: Model<CacheEntryDoc>,
+  ) {}
 
   async get(key: string): Promise<CacheEntry> {
-    let entry: CacheEntry = await this.model.findOne({ key });
+    let entry: CacheEntry = await this.model.findOne({ key }).exec();
     if (null === entry) {
       console.log('Cache miss');
       entry = await this.set(key, generateRndString(32));
     } else {
       console.log('Cache hit');
-      const now = new Date().getTime();
+      const now = this.dateFactory.now();
       if (entry.expiry < now) {
         entry = await this.set(key, generateRndString(32), true);
       } else {
-        this.model.updateOne({ key }, { expiry: this.getExpiry() });
+        this.model.updateOne({ key }, { expiry: this.getExpiry() }).exec();
       }
     }
     return entry;
@@ -57,7 +62,7 @@ export class CacheService {
 
   async set(key: string, value: string, override?: boolean): Promise<CacheEntry> {
     const cacheEntry = { key, value, expiry: this.getExpiry() };
-    await this.model.updateOne({ key }, cacheEntry, { upsert: true });
+    await this.model.updateOne({ key }, cacheEntry, { upsert: true }).exec();
     // The caller can signal that its only an override if he knows the
     // key exists, so that we can optimize and dont have to count
     if (!override) {
@@ -76,8 +81,8 @@ export class CacheService {
     return this.model.deleteMany({}).exec();
   }
 
-  private async vaccum(): Promise<void> {
-    const now = new Date().getTime();
+  async vaccum(): Promise<void> {
+    const now = this.dateFactory.now();
     await this.model.deleteMany({ expiry: { $lt: now } }).exec();
 
     const count = await this.model.countDocuments().exec();
@@ -93,11 +98,11 @@ export class CacheService {
         .limit(exceedingCount)
         .exec();
       const keys = results.map(entry => entry.key);
-      await this.model.deleteMany({ key: { $in: keys } });
+      await this.model.deleteMany({ key: { $in: keys } }).exec();
     }
   }
 
   private getExpiry(): number {
-    return new Date().getTime() + this.TTL;
+    return this.dateFactory.now() + this.TTL;
   }
 }

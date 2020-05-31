@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DateFactory, dateFactoryProvider } from '../utils/date-factory';
 import { generateRndString } from '../utils/utils';
-import { CacheEntry, CacheEntryDoc, CacheEntryKey } from './interfaces/cache-entry.interface';
+import { CacheEntry, CacheEntryDoc } from './interfaces/cache-entry.interface';
 
 /**
  * This Cache is implemented using LRU (Least Recently Used) eviction policy. This policy evicts the entry
@@ -55,7 +55,7 @@ export class CacheService {
     return entry;
   }
 
-  async findAll(properties: string[]): Promise<CacheEntryKey[]> {
+  async findAll(properties: string[]): Promise<Partial<CacheEntry>[]> {
     const projection = properties.reduce((prev, cur) => ((prev[cur] = 1), prev), {});
     return this.model.find(null, projection).exec();
   }

@@ -1,10 +1,7 @@
 import { Document } from 'mongoose';
 
-export interface CacheEntryKey {
+export interface CacheEntry {
   key: string;
-}
-
-export interface CacheEntry extends CacheEntryKey {
   value: string;
   expiry: number;
 }

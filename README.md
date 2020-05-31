@@ -41,3 +41,4 @@ $ npm run test:cov
 - Remove the \_id field or use it for the key
 - In case of an expired cache hit or chache miss, the response contains $setOnInsert property
 - Does the Cache#get method need to be atomic to prevent overriding cache entries? 
+- Add typings return value remove & removeAll

@@ -39,4 +39,10 @@ export class CacheController {
   async remove(key: string): Promise<void> {
     await this.cacheService.remove(key);
   }
+
+  @Delete()
+  @HttpCode(204)
+  async removeAll(): Promise<void> {
+    await this.cacheService.removeAll();
+  }
 }

@@ -1,6 +1,6 @@
 ## Intro
 
-Since i never used ExpressJs directly i used a framework i am more familiar with called nestjs. Its built on top of ExpressJs but is also compatible with other libraries such as Fastify. It gives us typescript support out of the box, so that we have not to setup that manually. Since i also never worked with MongoDB i decided to use the object modeling tool mongosse which is also supported by NestJs.
+Since i never used ExpressJS directly i used a framework i am more familiar with called NestJS. Its built on top of ExpressJS but is also compatible with other libraries such as Fastify. It gives us typescript support out of the box. Since i also never worked with MongoDB i decided to use the object modeling tool mongosse which is also supported by NestJs.
 
 P.S.: Sorry i forgot to keep the commit history clean an granular :)
 
@@ -12,7 +12,7 @@ $ npm install
 
 ## Running the app
 
-The up can run on any machine without setting up mongoDB because a public availabe mongoDB instace is used. Thanks to https://www.mongodb.com/cloud/atlas Free tier.
+The up can run on any machine without setting up mongoDB because a public availabe mongoDB instance is used. Thanks to https://www.mongodb.com/cloud/atlas Free tier.
 
 ```bash
 # development
@@ -27,7 +27,7 @@ $ npm run start:prod
 
 ## Test
 
-Currently there exists only unit test. In the feature e2e and integration tests should be added.
+Currently there exists only unit tests. In the future e2e and integration tests should be added.
 
 ```bash
 # unit tests
@@ -39,7 +39,7 @@ $ npm run test:cov
 
 ## Documentation
 
-To generate an API-Documenation compodoc is installed.
+To generate an API-Documenation compodoc is used.
 
 ```bash
 # generate documentation

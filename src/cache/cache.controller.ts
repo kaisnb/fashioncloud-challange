@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  HttpCode,
-  Param,
-  ParseArrayPipe,
-  Put,
-  Query,
-  Body,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseArrayPipe, Put, Query } from '@nestjs/common';
 import { CacheService } from './cache.service';
 import { CacheEntry, CacheEntryKey } from './interfaces/cache-entry.interface';
 
@@ -22,9 +12,7 @@ export class CacheController {
   }
 
   @Get()
-  async findAll(
-    @Query('properties', ParseArrayPipe) properties: string[],
-  ): Promise<CacheEntryKey[]> {
+  async findAll(@Query('properties', ParseArrayPipe) properties: string[]): Promise<CacheEntryKey[]> {
     return this.cacheService.findAll(properties);
   }
 

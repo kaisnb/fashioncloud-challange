@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { CacheModule } from './cache/cache.module';
 
 /**
@@ -17,12 +15,16 @@ const env = process.env.APP_ENV || 'dev';
       isGlobal: true,
       envFilePath: `env/.${env}.env`,
     }),
-    MongooseModule.forRoot(
-      'mongodb+srv://developer:VBg5vSmFitW4QC8O@cluster0-puo7u.mongodb.net/fashion-cloud-challange?retryWrites=true&w=majority',
-    ),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+      }),
+      inject: [ConfigService],
+    }),
     CacheModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

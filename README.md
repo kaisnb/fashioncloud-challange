@@ -51,6 +51,7 @@ $ npm run compodoc:cov
 
 ## TODOs
 
+- Add index to expiry column for faster query (some kind of index optimized for ordering)
 - Check if the expiry or a LRU cache can be implemented with database features
 - Remove the \_id field or use it for the key
 - In case of an expired cache hit or cache miss, the response contains \$setOnInsert property

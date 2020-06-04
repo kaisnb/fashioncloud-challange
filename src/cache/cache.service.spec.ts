@@ -41,9 +41,10 @@ describe('CacheService', () => {
 
   describe('get', () => {
     const key = 'key1';
+    let setFnSpy: jest.SpyInstance;
 
     beforeEach(() => {
-      service.set = jest.fn();
+      setFnSpy = jest.spyOn(service, 'set');
     });
 
     it('should create entry on cache miss', async () => {
@@ -51,8 +52,8 @@ describe('CacheService', () => {
 
       await service.get(key);
 
-      expect(service.set).toBeCalledTimes(1);
-      expect(service.set).toBeCalledWith(key, expect.any(String));
+      expect(setFnSpy).toBeCalledTimes(1);
+      expect(setFnSpy).toBeCalledWith(key, expect.any(String));
     });
 
     it('should create entry if expired', async () => {
@@ -62,8 +63,8 @@ describe('CacheService', () => {
 
       await service.get(key);
 
-      expect(service.set).toBeCalledTimes(1);
-      expect(service.set).toBeCalledWith(key, expect.any(String), true);
+      expect(setFnSpy).toBeCalledTimes(1);
+      expect(setFnSpy).toBeCalledWith(key, expect.any(String), true);
     });
 
     it('should update expiry on cache hit', async () => {
